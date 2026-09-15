@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>寬度配置工具</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- ── 初始輸入畫面 ── -->
+  <main id="setup-screen" class="setup-screen" aria-label="設定總寬">
+    <div class="setup-card">
+      <h1 class="setup-title">寬度配置工具</h1>
+      <p class="setup-desc">輸入總寬後按 Enter 或點擊確認，即可在量測線上單擊新增物件。</p>
+
+      <div class="input-group">
+        <label for="total-width-input" class="input-label">總寬</label>
+        <div class="input-row">
+          <input
+            id="total-width-input"
+            type="number"
+            class="width-input"
+            min="0.01"
+            step="any"
+            placeholder="例：200"
+            autocomplete="off"
+            aria-describedby="total-width-error"
+            aria-required="true"
+          />
+          <span class="unit-label" aria-hidden="true">cm</span>
+          <button id="confirm-btn" class="confirm-btn" type="button">確認</button>
+        </div>
+        <p
+          id="total-width-error"
+          class="error-msg"
+          role="alert"
+          aria-live="assertive"
+          aria-atomic="true"
+        ></p>
+      </div>
+    </div>
+  </main>
+
+  <!-- ── 量測畫面 ── -->
+  <section
+    id="measure-screen"
+    class="measure-screen hidden"
+    aria-label="量測區"
+  >
+    <!-- 頂部工具列 -->
+    <header class="toolbar" role="banner">
+      <div class="toolbar-left">
+        <span class="toolbar-label">總寬：</span>
+        <span id="total-width-display" class="toolbar-value" aria-live="polite"></span>
+        <span class="toolbar-unit">cm</span>
+        <button id="change-width-btn" class="change-btn" type="button" aria-label="修改總寬">修改</button>
+      </div>
+      <div class="toolbar-right">
+        <span class="toolbar-hint">單擊量測線新增物件 · 雙擊物件修改寬度 · 拖曳移動</span>
+        <button id="share-btn" class="share-btn" type="button" aria-label="複製分享連結">
+          <svg aria-hidden="true" width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M13.5 1a2.5 2.5 0 1 1-1.88 4.14L6.44 7.93a2.5 2.5 0 0 1 0 .14l5.18 2.79a2.5 2.5 0 1 1-.72 1.34L5.72 9.41a2.5 2.5 0 1 1 0-2.82l5.18-2.79A2.5 2.5 0 0 1 13.5 1z"/>
+          </svg>
+          複製連結
+        </button>
+      </div>
+    </header>
+
+    <!-- 狀態 / 錯誤訊息 -->
+    <div
+      id="status-msg"
+      class="status-msg"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+    ></div>
+
+    <!-- 量測區容器 -->
+    <div class="measure-container" id="measure-container">
+      <!-- H 型量測線（SVG 背景線） -->
+      <div class="ruler-wrapper" id="ruler-wrapper" aria-label="量測線，可單擊新增物件">
+        <!-- 上方標籤列（物件寬度、空白寬度） -->
+        <div class="labels-top" id="labels-top" aria-hidden="true"></div>
+
+        <!-- H 型線本體 -->
+        <div class="ruler-track" id="ruler-track" role="presentation">
+          <div class="ruler-endcap ruler-endcap--left" aria-hidden="true"></div>
+          <div class="ruler-line" id="ruler-line" aria-hidden="true"></div>
+          <div class="ruler-endcap ruler-endcap--right" aria-hidden="true"></div>
+
+          <!-- 物件區塊（動態插入） -->
+          <div class="objects-layer" id="objects-layer"></div>
+        </div>
+
+        <!-- 下方越界與區段標籤列 -->
+        <div class="labels-bottom" id="labels-bottom" aria-hidden="true"></div>
+      </div>
+    </div>
+
+    <!-- 行內寬度編輯器（雙擊物件後顯示） -->
+    <div id="inline-editor" class="inline-editor hidden" role="dialog" aria-label="編輯物件" aria-modal="true">
+      <label for="edit-width-input" class="edit-label">寬度 (cm)</label>
+      <input
+        id="edit-width-input"
+        type="number"
+        class="edit-input"
+        min="0.01"
+        step="any"
+        autocomplete="off"
+        aria-describedby="edit-error"
+      />
+      <p id="edit-error" class="error-msg" role="alert" aria-live="assertive" aria-atomic="true"></p>
+      <label for="edit-label-input" class="edit-label" style="margin-top:0.4rem;">註解（選填）</label>
+      <input
+        id="edit-label-input"
+        type="text"
+        class="edit-input"
+        maxlength="40"
+        placeholder="例：主牆、窗戶…"
+        autocomplete="off"
+      />
+      <div class="edit-hint">Tab 切換欄位 · Enter 套用 · Escape 取消</div>
+    </div>
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>
