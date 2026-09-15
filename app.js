@@ -702,6 +702,46 @@ objectsLayer.addEventListener('pointermove',  onPointerMove);
 objectsLayer.addEventListener('pointerup',    onPointerUp);
 objectsLayer.addEventListener('pointercancel',onPointerUp);
 
+// 方向鍵精確移動（焦點在物件上時）
+// Shift + 方向鍵 → 1.0 cm；單獨方向鍵 → 0.1 cm
+objectsLayer.addEventListener('keydown', e => {
+  if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+  const objEl = e.target.closest('.obj-rect');
+  if (!objEl) return;
+  if (state.editing) return; // 編輯器開啟中不響應
+
+  e.preventDefault(); // 防止頁面捲動
+
+  const objId = objEl.getAttribute('data-id');
+  const obj   = state.objects.find(o => o.id === objId);
+  if (!obj) return;
+
+  const step    = e.shiftKey ? 1.0 : 0.1;
+  const dir     = e.key === 'ArrowRight' ? 1 : -1;
+  const idx     = state.objects.indexOf(obj);
+  const half    = obj.widthCm / 2;
+  let newCenter = obj.centerCm + dir * step;
+
+  // 夾限：不能與左右相鄰物件重疊（同拖曳邏輯）
+  if (idx > 0) {
+    const prev = state.objects[idx - 1];
+    const minCenter = prev.centerCm + prev.widthCm / 2 + half + 1e-9;
+    if (newCenter < minCenter) newCenter = minCenter;
+  }
+  if (idx < state.objects.length - 1) {
+    const next = state.objects[idx + 1];
+    const maxCenter = next.centerCm - next.widthCm / 2 - half - 1e-9;
+    if (newCenter > maxCenter) newCenter = maxCenter;
+  }
+
+  obj.centerCm = newCenter;
+  render();
+
+  // render() 會重建 DOM，需重新將焦點設回對應物件
+  const newEl = document.getElementById('rect-' + objId);
+  if (newEl) newEl.focus();
+});
+
 // 行內編輯器鍵盤
 editWidthInput.addEventListener('keydown', e => {
   if (e.key === 'Enter')  { e.preventDefault(); applyEdit(); }
