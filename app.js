@@ -580,6 +580,7 @@ function onPointerDown(e) {
 
   e.preventDefault();
   objEl.setPointerCapture(e.pointerId);
+  objEl.focus({ preventScroll: true }); // preventDefault 阻止了瀏覽器自動聚焦，手動補上
 
   state.dragging = {
     id: objId,
@@ -662,6 +663,7 @@ function onPointerMove(e) {
 function onPointerUp(e) {
   if (!state.dragging) return;
   const drag = state.dragging;
+  const objId = drag.id;
 
   // 移除 dragging class
   const objEl = document.getElementById('rect-' + drag.id);
@@ -669,12 +671,17 @@ function onPointerUp(e) {
 
   if (drag.didMove) {
     _suppressNextClick = true;
-    // 在下一個 click 事件清除
     setTimeout(() => { _suppressNextClick = false; }, 100);
   }
 
   state.dragging = null;
   render();
+
+  // render() 重建 DOM 後焦點會掉回 body，在下一幀還給物件
+  requestAnimationFrame(() => {
+    const newEl = document.getElementById('rect-' + objId);
+    if (newEl) newEl.focus({ preventScroll: true });
+  });
 }
 
 // ═══════════════════════════════════════════════════════
@@ -713,13 +720,14 @@ objectsLayer.addEventListener('pointercancel',onPointerUp);
 
 // 方向鍵精確移動（焦點在物件上時）
 // Shift + 方向鍵 → 1.0 cm；單獨方向鍵 → 0.1 cm
-objectsLayer.addEventListener('keydown', e => {
+// 綁在 document 確保事件能收到，用 closest 確認焦點在物件上
+document.addEventListener('keydown', e => {
   if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
-  const objEl = e.target.closest('.obj-rect');
+  const objEl = document.activeElement && document.activeElement.closest('.obj-rect');
   if (!objEl) return;
-  if (state.editing) return; // 編輯器開啟中不響應
+  if (state.editing) return;
 
-  e.preventDefault(); // 防止頁面捲動
+  e.preventDefault();
 
   const objId = objEl.getAttribute('data-id');
   const obj   = state.objects.find(o => o.id === objId);
@@ -731,7 +739,7 @@ objectsLayer.addEventListener('keydown', e => {
   const half    = obj.widthCm / 2;
   let newCenter = obj.centerCm + dir * step;
 
-  // 夾限：不能與左右相鄰物件重疊（同拖曳邏輯）
+  // 夾限：不能與左右相鄰物件重疊
   if (idx > 0) {
     const prev = state.objects[idx - 1];
     const minCenter = prev.centerCm + prev.widthCm / 2 + half + 1e-9;
@@ -746,9 +754,11 @@ objectsLayer.addEventListener('keydown', e => {
   obj.centerCm = newCenter;
   render();
 
-  // render() 會重建 DOM，需重新將焦點設回對應物件
-  const newEl = document.getElementById('rect-' + objId);
-  if (newEl) newEl.focus();
+  // render() 重建 DOM，需在下一幀將焦點還給對應物件
+  requestAnimationFrame(() => {
+    const newEl = document.getElementById('rect-' + objId);
+    if (newEl) newEl.focus({ preventScroll: true });
+  });
 });
 
 // 行內編輯器鍵盤
