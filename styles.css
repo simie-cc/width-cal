@@ -487,6 +487,37 @@ body {
   margin-top: 0.1rem;
 }
 
+.edit-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+}
+
+.delete-btn {
+  padding: 0.25rem 0.75rem;
+  border: 1.5px solid var(--clr-error);
+  border-radius: var(--radius);
+  background: transparent;
+  font-size: 0.8rem;
+  font-family: inherit;
+  font-weight: 600;
+  color: var(--clr-error);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.delete-btn:hover {
+  background: var(--clr-error);
+  color: #fff;
+}
+.delete-btn:focus-visible {
+  outline: 3px solid var(--clr-error);
+  outline-offset: 2px;
+}
+
 /* ══════════════════════════════════════════════
    Scrollbar polish (optional)
 ══════════════════════════════════════════════ */

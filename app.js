@@ -39,6 +39,7 @@ const inlineEditor     = document.getElementById('inline-editor');
 const editWidthInput   = document.getElementById('edit-width-input');
 const editLabelInput   = document.getElementById('edit-label-input');
 const editError        = document.getElementById('edit-error');
+const deleteObjBtn     = document.getElementById('delete-obj-btn');
 const rulerWrapper     = document.getElementById('ruler-wrapper');
 const shareBtn         = document.getElementById('share-btn');
 
@@ -505,6 +506,14 @@ function closeEditor() {
   editWidthInput.removeAttribute('aria-invalid');
 }
 
+function deleteEditingObj() {
+  const objId = state.editing;
+  if (!objId) return;
+  state.objects = state.objects.filter(o => o.id !== objId);
+  closeEditor();
+  render();
+}
+
 function applyEdit() {
   const objId = state.editing;
   if (!objId) return;
@@ -760,6 +769,8 @@ editLabelInput.addEventListener('blur', e => {
   if (inlineEditor.contains(e.relatedTarget)) return;
   applyEdit();
 });
+// 刪除按鈕
+deleteObjBtn.addEventListener('click', deleteEditingObj);
 
 // 點擊編輯器外部 → 關閉（使用 Escape 語意）
 document.addEventListener('mousedown', e => {
